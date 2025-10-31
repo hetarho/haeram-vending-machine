@@ -1,8 +1,12 @@
-export default function Home() {
+import { listProducts } from './api/listProducts';
+import { VendingMachineContainer } from '@/src/components/VendingMachineContainer';
+
+export default async function Home() {
+  const initialData = await listProducts();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 p-4 font-sans">
-   
-    </div>
+    <main className="min-h-screen p-8">
+      <VendingMachineContainer initialData={initialData} />
+    </main>
   );
 }
