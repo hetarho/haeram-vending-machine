@@ -5,11 +5,11 @@ type Props = {
 
 export function DisplayPanel({ balance, errorMessage }: Props) {
   return (
-    <div>
+    <div className="bg-black text-green-400 font-mono text-3xl p-6 rounded-lg mb-6 text-center">
       {errorMessage ? (
-        <div className="error">{errorMessage}</div>
+        <div className="text-red-500">{errorMessage}</div>
       ) : (
-        <div className="balance">잔액: {balance.toLocaleString()}원</div>
+        <div>잔액: {balance.toLocaleString()}원</div>
       )}
     </div>
   );

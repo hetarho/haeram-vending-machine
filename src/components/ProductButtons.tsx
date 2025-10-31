@@ -18,7 +18,7 @@ export function ProductButtons({
   onSelectDrink,
 }: Props) {
   return (
-    <div className="product-buttons">
+    <div className="grid grid-cols-3 gap-4 mb-6">
       {products.map((product) => {
         const buttonState = getButtonState(
           product,

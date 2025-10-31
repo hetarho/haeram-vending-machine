@@ -25,8 +25,8 @@ export function VendingMachineContainer({ initialData }: Props) {
   } = useVendingMachine(initialData);
 
   return (
-    <div className="vending-machine">
-      <h1>자판기</h1>
+    <div className="max-w-2xl mx-auto bg-gray-800 rounded-2xl p-8 shadow-2xl">
+      <h1 className="text-4xl font-bold text-white text-center mb-8">자판기</h1>
       
       <DisplayPanel
         balance={context.balance}
