@@ -1,7 +1,7 @@
 import { setup, assign } from 'xstate';
-import type { VendingMachineContext, VendingMachineEvent, Product } from '@/src/types';
+import type { VendingMachineContext, VendingMachineEvent, Product, InitialMachineState } from '@/src/types';
 
-export const vendingMachine = setup({
+const vendingMachineSetup = setup({
   types: {
     context: {} as VendingMachineContext,
     events: {} as VendingMachineEvent,
@@ -100,7 +100,127 @@ export const vendingMachine = setup({
       errorMessage: null,
     }),
   },
-}).createMachine({
+});
+
+export function createVendingMachine(initialData: InitialMachineState) {
+  return vendingMachineSetup.createMachine({
+    id: 'vendingMachine',
+    initial: 'idle',
+    context: {
+      balance: 0,
+      changeReserve: initialData.changeReserve,
+      changeAvailable: initialData.changeAvailable,
+      paymentMethod: null,
+      selectedDrink: null,
+      products: initialData.products,
+      errorMessage: null,
+    },
+    states: {
+      idle: {
+        entry: ['resetState'],
+        on: {
+          INSERT_CASH: {
+            guard: 'changeAvailable',
+            target: 'cashInserted',
+            actions: ['assignBalance', 'assignPaymentMethodCash'],
+          },
+          INSERT_CARD: {
+            target: 'cardInserted',
+          },
+          CHECK_CHANGE: {
+            guard: 'changeNotAvailable',
+            target: 'changeShortage',
+          },
+        },
+      },
+      cashInserted: {
+        on: {
+          INSERT_CASH: {
+            target: 'cashInserted',
+            actions: ['assignBalance'],
+            reenter: true,
+          },
+          INSERT_CARD: {
+            target: 'cardInserted',
+            actions: ['refundBalance', 'assignPaymentMethodCard'],
+          },
+          SELECT_DRINK: {
+            guard: 'canPurchase',
+            target: 'dispensing',
+            actions: ['selectDrink'],
+          },
+          REFUND: {
+            target: 'refunding',
+          },
+        },
+      },
+      cardInserted: {
+        entry: ['assignPaymentMethodCard'],
+        on: {
+          SELECT_DRINK: {
+            guard: 'hasStock',
+            target: 'processingPayment',
+            actions: ['selectDrink'],
+          },
+        },
+      },
+      processingPayment: {
+        on: {
+          PAYMENT_SUCCESS: {
+            target: 'dispensing',
+          },
+          PAYMENT_FAILURE: {
+            target: 'error',
+            actions: ['setError'],
+          },
+        },
+      },
+      dispensing: {
+        entry: ['decrementStock', 'deductBalance'],
+        on: {
+          DISPENSE_SUCCESS: {
+            target: 'idle',
+          },
+          DISPENSE_FAILURE: {
+            target: 'error',
+            actions: ['setError'],
+          },
+        },
+      },
+      refunding: {
+        entry: ['refundBalance'],
+        on: {
+          REFUND_COMPLETE: {
+            target: 'idle',
+          },
+        },
+      },
+      changeShortage: {
+        on: {
+          INSERT_CARD: {
+            target: 'cardInserted',
+          },
+          CHANGE_REPLENISHED: {
+            target: 'idle',
+            actions: ['updateChangeReserve'],
+          },
+        },
+      },
+      error: {
+        entry: ['refundBalance', 'setError'],
+        on: {
+          REFUND_COMPLETE: {
+            target: 'idle',
+            actions: ['clearError'],
+          },
+        },
+      },
+    },
+  });
+}
+
+// 기본 머신 (하위 호환성을 위해)
+export const vendingMachine = vendingMachineSetup.createMachine({
   id: 'vendingMachine',
   initial: 'idle',
   context: {
