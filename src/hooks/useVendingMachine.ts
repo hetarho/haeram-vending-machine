@@ -65,7 +65,7 @@ export function useVendingMachine(initialData: InitialMachineState) {
     } else if (state.value === 'idle' && statusMessage && !statusMessage.includes('투입')) {
       setStatusMessage(null);
     }
-  }, [state.value, state.context.selectedDrink, state.context.errorMessage]);
+  }, [state.value, state.context.selectedDrink, state.context.errorMessage, statusMessage]);
 
   // 헬퍼 함수들
   const insertCash = (amount: number) => {

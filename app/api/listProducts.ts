@@ -22,13 +22,13 @@ export async function listProducts(): Promise<InitialMachineState> {
         id: 'cola',
         name: '콜라',
         price: 1100,
-        stock: 10,
+        stock: 3,
       },
       {
         id: 'water',
         name: '물',
         price: 600,
-        stock: 5,
+        stock: 10,
       },
       {
         id: 'coffee',
