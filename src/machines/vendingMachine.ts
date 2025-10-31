@@ -157,7 +157,7 @@ const vendingMachineSetup = setup({
       errorMessage: null,
     }),
     resetState: assign({
-      paymentMethod: null,
+      paymentMethod: ({ context }) => context.balance > 0 ? context.paymentMethod : null,
       selectedDrink: null,
       errorMessage: null,
     }),
@@ -192,6 +192,11 @@ export function createVendingMachine(initialData: InitialMachineState) {
           },
           INSERT_CARD: {
             target: "cardInserted",
+          },
+          SELECT_DRINK: {
+            guard: "canPurchase",
+            target: "dispensing",
+            actions: ["selectDrink"],
           },
           REFUND: {
             target: "refunding",
