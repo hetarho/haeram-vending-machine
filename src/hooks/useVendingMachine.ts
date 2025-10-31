@@ -42,14 +42,6 @@ export function useVendingMachine(initialData: InitialMachineState) {
       }, 1000); // 1초 후 환불 완료
       return () => clearTimeout(timer);
     }
-    
-    // 에러 처리 (자동 환불)
-    if (state.value === 'error') {
-      const timer = setTimeout(() => {
-        send({ type: 'REFUND_COMPLETE' });
-      }, 2000); // 2초 후 환불 완료
-      return () => clearTimeout(timer);
-    }
   }, [state.value, state.context.selectedDrink, send]);
 
   // 헬퍼 함수들

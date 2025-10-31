@@ -25,7 +25,7 @@ export function PaymentButtons({ onInsertCash, onInsertCard, canInsertCash }: Pr
         onClick={onInsertCard} 
         className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg transition-all"
       >
-        카드 결제
+        카드 투입
       </button>
     </div>
   );

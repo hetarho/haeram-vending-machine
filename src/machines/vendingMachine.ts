@@ -1,5 +1,6 @@
 import { setup, assign } from 'xstate';
-import type { VendingMachineContext, VendingMachineEvent, Product, InitialMachineState } from '@/src/types';
+import type { VendingMachineContext, VendingMachineEvent, Product, InitialMachineState, ChangeReserve } from '@/src/types';
+import { calculateChange } from '@/src/utils/calculateChange';
 
 const vendingMachineSetup = setup({
   types: {
@@ -31,6 +32,22 @@ const vendingMachineSetup = setup({
           return context.balance + event.amount;
         }
         return context.balance;
+      },
+    }),
+    addToChangeReserve: assign({
+      changeReserve: ({ context, event }) => {
+        if (event.type === 'INSERT_CASH') {
+          const amount = event.amount;
+          // 투입된 금액을 changeReserve에 추가
+          if (amount === 10 || amount === 50 || amount === 100 || amount === 500 || 
+              amount === 1000 || amount === 5000 || amount === 10000 || amount === 50000) {
+            return {
+              ...context.changeReserve,
+              [amount]: context.changeReserve[amount as keyof typeof context.changeReserve] + 1,
+            };
+          }
+        }
+        return context.changeReserve;
       },
     }),
     assignPaymentMethodCash: assign({
@@ -65,6 +82,29 @@ const vendingMachineSetup = setup({
         return context.balance;
       },
     }),
+    deductFromChangeReserve: assign({
+      changeReserve: ({ context }) => {
+        const refundAmount = context.balance;
+        if (refundAmount === 0) return context.changeReserve;
+        
+        // calculateChange로 환불할 금액 계산
+        const changeResult = calculateChange(refundAmount, context.changeReserve);
+        
+        if (changeResult.success && changeResult.change) {
+          // changeReserve에서 차감
+          const newReserve: ChangeReserve = { ...context.changeReserve };
+          const denominations = [50000, 10000, 5000, 1000, 500, 100, 50, 10] as const;
+          
+          for (const denom of denominations) {
+            newReserve[denom] -= changeResult.change[denom];
+          }
+          
+          return newReserve;
+        }
+        
+        return context.changeReserve;
+      },
+    }),
     refundBalance: assign({
       balance: 0,
     }),
@@ -94,7 +134,6 @@ const vendingMachineSetup = setup({
       errorMessage: null,
     }),
     resetState: assign({
-      balance: 0,
       paymentMethod: null,
       selectedDrink: null,
       errorMessage: null,
@@ -122,10 +161,13 @@ export function createVendingMachine(initialData: InitialMachineState) {
           INSERT_CASH: {
             guard: 'changeAvailable',
             target: 'cashInserted',
-            actions: ['assignBalance', 'assignPaymentMethodCash'],
+            actions: ['assignBalance', 'addToChangeReserve', 'assignPaymentMethodCash'],
           },
           INSERT_CARD: {
             target: 'cardInserted',
+          },
+          REFUND: {
+            target: 'refunding',
           },
           CHECK_CHANGE: {
             guard: 'changeNotAvailable',
@@ -137,12 +179,12 @@ export function createVendingMachine(initialData: InitialMachineState) {
         on: {
           INSERT_CASH: {
             target: 'cashInserted',
-            actions: ['assignBalance'],
+            actions: ['assignBalance', 'addToChangeReserve'],
             reenter: true,
           },
           INSERT_CARD: {
             target: 'cardInserted',
-            actions: ['refundBalance', 'assignPaymentMethodCard'],
+            actions: ['assignPaymentMethodCard'],
           },
           SELECT_DRINK: {
             guard: 'canPurchase',
@@ -161,6 +203,9 @@ export function createVendingMachine(initialData: InitialMachineState) {
             guard: 'hasStock',
             target: 'processingPayment',
             actions: ['selectDrink'],
+          },
+          REFUND: {
+            target: 'refunding',
           },
         },
       },
@@ -188,7 +233,7 @@ export function createVendingMachine(initialData: InitialMachineState) {
         },
       },
       refunding: {
-        entry: ['refundBalance'],
+        entry: ['deductFromChangeReserve', 'refundBalance'],
         on: {
           REFUND_COMPLETE: {
             target: 'idle',
@@ -207,10 +252,10 @@ export function createVendingMachine(initialData: InitialMachineState) {
         },
       },
       error: {
-        entry: ['refundBalance', 'setError'],
+        entry: ['setError'],
         on: {
-          REFUND_COMPLETE: {
-            target: 'idle',
+          REFUND: {
+            target: 'refunding',
             actions: ['clearError'],
           },
         },
@@ -248,10 +293,13 @@ export const vendingMachine = vendingMachineSetup.createMachine({
         INSERT_CASH: {
           guard: 'changeAvailable',
           target: 'cashInserted',
-          actions: ['assignBalance', 'assignPaymentMethodCash'],
+          actions: ['assignBalance', 'addToChangeReserve', 'assignPaymentMethodCash'],
         },
         INSERT_CARD: {
           target: 'cardInserted',
+        },
+        REFUND: {
+          target: 'refunding',
         },
         CHECK_CHANGE: {
           guard: 'changeNotAvailable',
@@ -263,12 +311,12 @@ export const vendingMachine = vendingMachineSetup.createMachine({
       on: {
         INSERT_CASH: {
           target: 'cashInserted',
-          actions: ['assignBalance'],
+          actions: ['assignBalance', 'addToChangeReserve'],
           reenter: true,
         },
         INSERT_CARD: {
           target: 'cardInserted',
-          actions: ['refundBalance', 'assignPaymentMethodCard'],
+          actions: ['assignPaymentMethodCard'],
         },
         SELECT_DRINK: {
           guard: 'canPurchase',
@@ -287,6 +335,9 @@ export const vendingMachine = vendingMachineSetup.createMachine({
           guard: 'hasStock',
           target: 'processingPayment',
           actions: ['selectDrink'],
+        },
+        REFUND: {
+          target: 'refunding',
         },
       },
     },
@@ -314,7 +365,7 @@ export const vendingMachine = vendingMachineSetup.createMachine({
       },
     },
     refunding: {
-      entry: ['refundBalance'],
+      entry: ['deductFromChangeReserve', 'refundBalance'],
       on: {
         REFUND_COMPLETE: {
           target: 'idle',
@@ -333,10 +384,10 @@ export const vendingMachine = vendingMachineSetup.createMachine({
       },
     },
     error: {
-      entry: ['refundBalance', 'setError'],
+      entry: ['setError'],
       on: {
-        REFUND_COMPLETE: {
-          target: 'idle',
+        REFUND: {
+          target: 'refunding',
           actions: ['clearError'],
         },
       },
