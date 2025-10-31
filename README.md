@@ -116,7 +116,7 @@ State Machine의 모든 상태 전환과 Guard 조건을 테스트합니다.
 1. **Requirement** (`specs/requirement/`): 무엇을 만들지 정의
 2. **Design** (`specs/design/`): 어떻게 구현할지 설계
 3. **Task** (`specs/task/`): 실제 구현 작업 목록
-4. **evenet storming**: 이벤트 스토밍
+4. **evenet storming**: [이벤트 스토밍 다이어그램](https://excalidraw.com/#json=yMBRPB7fWaohYpa2iIWYM,PQNPGiB2EesJVJgDwM8A5Q)
 <img width="7438" height="5214" alt="event storming" src="https://github.com/user-attachments/assets/e613c671-727f-430d-912e-371d82b876fb" />
 
 ## 🎨 UI 특징
