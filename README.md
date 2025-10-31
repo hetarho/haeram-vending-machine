@@ -25,8 +25,6 @@ xstate v5 State Machine을 사용한 Next.js 기반 자판기 프로젝트입니
 
 ```mermaid
 stateDiagram-v2
-    [*] --> idle
-    
     idle --> cashInserted: INSERT_CASH<br/>[잔돈 충분]
     idle --> cardInserted: INSERT_CARD
     idle --> changeShortage: CHECK_CHANGE<br/>[잔돈 부족]
