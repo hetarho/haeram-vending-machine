@@ -204,6 +204,9 @@ export function createVendingMachine(initialData: InitialMachineState) {
             target: 'processingPayment',
             actions: ['selectDrink'],
           },
+          EJECT_CARD: {
+            target: 'idle',
+          },
           REFUND: {
             target: 'refunding',
           },
@@ -335,6 +338,9 @@ export const vendingMachine = vendingMachineSetup.createMachine({
           guard: 'hasStock',
           target: 'processingPayment',
           actions: ['selectDrink'],
+        },
+        EJECT_CARD: {
+          target: 'idle',
         },
         REFUND: {
           target: 'refunding',

@@ -17,20 +17,14 @@ export function VendingMachineContainer({ initialData }: Props) {
     products,
     insertCash,
     insertCard,
+    ejectCard,
     selectDrink,
     refund,
     isDispensing,
     isProcessing,
     canInsertCash,
+    statusMessage,
   } = useVendingMachine(initialData);
-
-  const getStatusMessage = () => {
-    if (state === 'processingPayment') return '결제 처리 중...';
-    if (state === 'dispensing') return `${context.selectedDrink?.name} 배출 중...`;
-    if (state === 'refunding') return '환불 처리 중...';
-    if (state === 'error') return context.errorMessage || '오류 발생';
-    return null;
-  };
 
   return (
     <div className="flex gap-6 max-w-7xl mx-auto">
@@ -51,10 +45,15 @@ export function VendingMachineContainer({ initialData }: Props) {
           onSelectDrink={selectDrink}
         />
         
+        {/* 상태 메시지 영역 */}
         <div className="bg-gray-900 rounded-lg p-8 min-h-32 flex items-center justify-center mb-6">
-          {getStatusMessage() && (
-            <div className="text-white text-xl animate-bounce">
-              {getStatusMessage()}
+          {statusMessage ? (
+            <div className="text-white text-xl font-semibold animate-pulse">
+              {statusMessage}
+            </div>
+          ) : (
+            <div className="text-gray-600 text-lg">
+              음료를 선택해주세요
             </div>
           )}
         </div>
@@ -165,9 +164,11 @@ export function VendingMachineContainer({ initialData }: Props) {
       <UserActionsPanel
         onInsertCash={insertCash}
         onInsertCard={insertCard}
+        onEjectCard={ejectCard}
         onRefund={refund}
         canInsertCash={canInsertCash}
         balance={context.balance}
+        isCardInserted={state === 'cardInserted'}
       />
     </div>
   );

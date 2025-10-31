@@ -47,6 +47,7 @@ export type VendingMachineState =
 export type VendingMachineEvent =
   | { type: 'INSERT_CASH'; amount: number }
   | { type: 'INSERT_CARD' }
+  | { type: 'EJECT_CARD' }
   | { type: 'SELECT_DRINK'; product: Product }
   | { type: 'PAYMENT_SUCCESS' }
   | { type: 'PAYMENT_FAILURE'; message: string }

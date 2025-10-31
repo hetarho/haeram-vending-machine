@@ -1,9 +1,11 @@
 type Props = {
   onInsertCash: (amount: number) => void;
   onInsertCard: () => void;
+  onEjectCard: () => void;
   onRefund: () => void;
   canInsertCash: boolean;
   balance: number;
+  isCardInserted: boolean;
 };
 
 const CASH_AMOUNTS = [100, 500, 1000, 5000, 10000];
@@ -11,9 +13,11 @@ const CASH_AMOUNTS = [100, 500, 1000, 5000, 10000];
 export function UserActionsPanel({ 
   onInsertCash, 
   onInsertCard, 
+  onEjectCard,
   onRefund,
   canInsertCash,
-  balance
+  balance,
+  isCardInserted
 }: Props) {
   return (
     <div className="w-80 bg-gray-700 rounded-2xl p-6 h-fit">
@@ -38,13 +42,23 @@ export function UserActionsPanel({
       
       {/* 카드 투입 */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-purple-400 mb-3">💳 카드 투입</h3>
-        <button 
-          onClick={onInsertCard} 
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg transition-all"
-        >
-          카드 투입
-        </button>
+        <h3 className="text-lg font-semibold text-purple-400 mb-3">💳 카드</h3>
+        <div className="space-y-2">
+          <button 
+            onClick={onInsertCard} 
+            disabled={isCardInserted}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            카드 투입
+          </button>
+          <button 
+            onClick={onEjectCard} 
+            disabled={!isCardInserted}
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            카드 회수
+          </button>
+        </div>
       </div>
       
       {/* 환불 */}
