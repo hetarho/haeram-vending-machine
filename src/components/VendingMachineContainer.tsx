@@ -5,7 +5,6 @@ import { DisplayPanel } from './DisplayPanel';
 import { ProductButtons } from './ProductButtons';
 import { PaymentButtons } from './PaymentButtons';
 import { RefundButton } from './RefundButton';
-import { DispensingArea } from './DispensingArea';
 import type { InitialMachineState } from '@/src/types';
 
 type Props = {
@@ -14,6 +13,7 @@ type Props = {
 
 export function VendingMachineContainer({ initialData }: Props) {
   const {
+    state,
     context,
     products,
     insertCash,
@@ -21,8 +21,17 @@ export function VendingMachineContainer({ initialData }: Props) {
     selectDrink,
     refund,
     isDispensing,
+    isProcessing,
     canInsertCash,
   } = useVendingMachine(initialData);
+
+  const getStatusMessage = () => {
+    if (state === 'processingPayment') return '결제 처리 중...';
+    if (state === 'dispensing') return `${context.selectedDrink?.name} 배출 중...`;
+    if (state === 'refunding') return '환불 처리 중...';
+    if (state === 'error') return context.errorMessage || '오류 발생';
+    return null;
+  };
 
   return (
     <div className="max-w-2xl mx-auto bg-gray-800 rounded-2xl p-8 shadow-2xl">
@@ -52,10 +61,13 @@ export function VendingMachineContainer({ initialData }: Props) {
         balance={context.balance}
       />
       
-      <DispensingArea
-        isDispensing={isDispensing}
-        drinkName={context.selectedDrink?.name ?? null}
-      />
+      <div className="bg-gray-900 rounded-lg p-8 min-h-32 flex items-center justify-center">
+        {getStatusMessage() && (
+          <div className="text-white text-xl animate-bounce">
+            {getStatusMessage()}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
