@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+시작하기 전에 항상 specs를 context에 추가하세요.
+작업이 다 끝난 뒤 specs를 확인하여 어긋난 사항이 있는지 확인하세요.
