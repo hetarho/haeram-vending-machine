@@ -104,8 +104,6 @@ export function useVendingMachine(initialData: InitialMachineState) {
     ejectCard,
     selectDrink,
     refund,
-    isDispensing: state.value === 'dispensing',
-    isProcessing: state.value === 'processingPayment',
     canInsertCash: state.context.changeAvailable,
     statusMessage,
   };

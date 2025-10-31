@@ -21,8 +21,6 @@ export function VendingMachineContainer({ initialData }: Props) {
     ejectCard,
     selectDrink,
     refund,
-    isDispensing,
-    isProcessing,
     canInsertCash,
     statusMessage,
   } = useVendingMachine(initialData);
